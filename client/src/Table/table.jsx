@@ -1,5 +1,5 @@
 // table.jsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Table,
@@ -15,13 +15,37 @@ import {
   Paper,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+
+
 
 function EmployeesTable() {
   // State to manage the list of employees
+  const navigate = useNavigate();
   const [employees, setEmployees] = useState([]); // State for storing employee data
   const [open, setOpen] = useState(false); // State for controlling modal visibility
   const [currentEmployee, setCurrentEmployee] = useState({ name: '', position: '', contact: '' }); // State for managing employee data
   const [isEditing, setIsEditing] = useState(false); // State to determine if editing or adding an employee
+  const [message, setMessage] = useState()
+
+
+  
+  axios.defaults.withCredentials = true;  
+    useEffect(() => {
+      axios.get('http://localhost:3001/table')
+      .then(res => {
+        if(res.data.valid) {
+          setMessage(res.data.message)
+        }else {
+          navigate('/')
+        }
+      })
+      .catch(err => console.log(err))
+    })
+  
+
+
 
   // Function to open the modal for adding a new employee
   const handleOpen = () => {
@@ -68,7 +92,7 @@ function EmployeesTable() {
   };
 
 
-  const navigate = useNavigate();
+
 
 
   return (
@@ -77,7 +101,7 @@ function EmployeesTable() {
       {/* Buttons: Add Employee and Log Out */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '75%', mb: 2 }}>
         <Button variant="contained" color="primary" onClick={handleOpen}>
-          Add Employee
+          Add Employee 
         </Button>
         <Button variant="contained" color="secondary" onClick={()=>{
           navigate("/")

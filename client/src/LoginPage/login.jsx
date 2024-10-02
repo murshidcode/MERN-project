@@ -14,6 +14,7 @@ function LogIn() {
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
+    axios.defaults.withCredentials = true;
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.id]: e.target.value });
     };
@@ -26,6 +27,7 @@ function LogIn() {
               navigate("/table");
           } else {
               setError("Login failed: User does not exist");
+              navigate("/")
           }
       } catch (err) {
           // Customizing the error message based on the response
