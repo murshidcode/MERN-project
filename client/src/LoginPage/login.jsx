@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -15,41 +15,54 @@ function LogIn() {
     const navigate = useNavigate();
 
     axios.defaults.withCredentials = true;
+
+    // Check if user is already logged in
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const response = await axios.get("http://localhost:3001/table");
+                if (response.data.valid) {
+                    navigate("/table");  // If valid session, redirect to table
+                }
+            } catch (error) {
+                console.log("User not authenticated:", error);
+            }
+        };
+        checkAuth();
+    }, [navigate]);
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.id]: e.target.value });
     };
 
     const handleSubmit = async (e) => {
-      e.preventDefault();
-      try {
-          const result = await axios.post("http://localhost:3001/login", formData);
-          if (result.data === "Success") {
-              navigate("/table");
-          } else {
-              setError("Login failed: User does not exist");
-              navigate("/")
-          }
-      } catch (err) {
-          // Customizing the error message based on the response
-          if (err.response) {
-              // Check for specific status codes or messages from your backend
-              if (err.response.status === 401) {
-                  setError("Incorrect email or password. Please try again.");
-              } else {
-                  setError("An error occurred. Please try again.");
-              }
-          } else {
-              setError("Unable to connect to the server. Please try again later.");
-          }
-      }
-  
-      // Reset form fields after submission
-      setFormData({
-          email: '',
-          password: '',
-      });
-  };
-  
+        e.preventDefault();
+        try {
+            const result = await axios.post("http://localhost:3001/login", formData);
+            if (result.data === "Success") {
+                navigate("/table");
+            } else {
+                setError("Login failed: User does not exist");
+            }
+        } catch (err) {
+            if (err.response) {
+                if (err.response.status === 401) {
+                    setError("Incorrect email or password. Please try again.");
+                } else {
+                    setError("An error occurred. Please try again.");
+                }
+            } else {
+                setError("Unable to connect to the server. Please try again later.");
+            }
+        }
+
+        // Reset form fields after submission
+        setFormData({
+            email: '',
+            password: '',
+        });
+    };
+
     return (
         <Box
             sx={{
@@ -79,7 +92,7 @@ function LogIn() {
                 noValidate
                 autoComplete="off"
             >
-                <Typography variant="h5" component="h1" gutterBottom sx={{mb:8,mt:2}}>
+                <Typography variant="h5" component="h1" gutterBottom sx={{ mb: 8, mt: 2 }}>
                     Log In
                 </Typography>
 

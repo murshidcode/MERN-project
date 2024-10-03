@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken")
 const cookieParser = require("cookie-parser")
+const session = require("express-session")
 const UserModel = require("./model/User");
 
 dotenv.config();
@@ -15,6 +16,12 @@ app.use(cors({
     origin:["http://localhost:3000"],
     credentials:true
 }));
+app.use(session({
+    secret: 'your-session-secret-key',
+    resave: false,
+    saveUninitialized:true,
+    cookie:{secure:false}
+}))
 
 
 mongoose.connect(process.env.MONGO_URI)
@@ -113,4 +120,15 @@ const renewToken = (req, res) => {
 app.get('/table',varifyUser,(req, res) => {
     return res.json({valid: true, message: "authorized"})
 })
+
+
+
+
+app.post('/logout', (req, res) => {
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+    return res.status(200).json({ message: 'Logged out successfully' });
+  });
+  
+  
  

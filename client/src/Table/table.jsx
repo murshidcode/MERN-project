@@ -1,4 +1,3 @@
-// table.jsx
 import React, { useEffect, useState } from 'react';
 import {
   Box,
@@ -17,35 +16,37 @@ import {
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-
-
-
 function EmployeesTable() {
-  // State to manage the list of employees
   const navigate = useNavigate();
   const [employees, setEmployees] = useState([]); // State for storing employee data
   const [open, setOpen] = useState(false); // State for controlling modal visibility
   const [currentEmployee, setCurrentEmployee] = useState({ name: '', position: '', contact: '' }); // State for managing employee data
   const [isEditing, setIsEditing] = useState(false); // State to determine if editing or adding an employee
-  const [message, setMessage] = useState()
+  const [message, setMessage] = useState('');
 
+  axios.defaults.withCredentials = true;
 
-  
-  axios.defaults.withCredentials = true;  
-    useEffect(() => {
-      axios.get('http://localhost:3001/table')
-      .then(res => {
-        if(res.data.valid) {
-          setMessage(res.data.message)
-        }else {
-          navigate('/')
+  // Check if user is authenticated before loading the table
+  useEffect(() => {
+    const checkAuthorization = async () => {
+      try {
+        const res = await axios.get('http://localhost:3001/table');
+        if (res.data.valid) {
+          setMessage(res.data.message);
+        } else {
+          navigate('/');  // Redirect to login if user is not authorized
         }
-      })
-      .catch(err => console.log(err))
-    })
+      } catch (err) {
+        console.error(err);
+        navigate('/');  // Redirect to login on any error
+      }
+    };
   
-
-
+    checkAuthorization();  // Call the function
+  
+    // We remove `navigate` from the dependency array to prevent unnecessary re-renders
+  }, []);
+  
 
   // Function to open the modal for adding a new employee
   const handleOpen = () => {
@@ -91,29 +92,38 @@ function EmployeesTable() {
     setEmployees((prev) => prev.filter(emp => emp.id !== id)); // Remove employee from the list based on ID
   };
 
-
-
-
-
   return (
     <Box sx={{ padding: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      
+      <Typography variant="h4" component="h2" gutterBottom>
+       Employees Table
+      </Typography>
+
       {/* Buttons: Add Employee and Log Out */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '75%', mb: 2 }}>
         <Button variant="contained" color="primary" onClick={handleOpen}>
           Add Employee 
         </Button>
-        <Button variant="contained" color="secondary" onClick={()=>{
-          navigate("/")
-        }}>
-          Log Out
-        </Button>
+        <Button 
+         variant="contained" 
+         color="secondary" 
+         onClick={() => {
+           axios.post('http://localhost:3001/logout') // Make the logout request
+              .then(() => {
+              navigate('/'); // Redirect to login after successful logout
+                })
+             .catch((err) => {
+             console.error('Logout error: ', err);
+             });
+             }}
+              >
+           Log Out
+       </Button>
       </Box>
 
-      <TableContainer 
-        component={Paper} 
-        sx={{ 
-          marginTop: 2, 
+      <TableContainer
+        component={Paper}
+        sx={{
+          marginTop: 2,
           width: '75%', // Set width to 75%
           border: '1px solid #ccc', // Border for the table
           borderRadius: '4px', // Rounded corners
