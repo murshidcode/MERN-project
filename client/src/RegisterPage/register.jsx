@@ -9,7 +9,6 @@ import { useValidation } from './validation'; // Importing the validation logic
 import { useNavigate } from 'react-router-dom';
 
 function RegistrationForm() {
-  // State to manage form fields
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -18,50 +17,44 @@ function RegistrationForm() {
   });
 
   const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState(''); // State for error messages
-  const { errors, validate } = useValidation(); // Using validation hook
+  const [errorMessage, setErrorMessage] = useState(''); 
+  const { errors, validate } = useValidation(); 
 
   const navigate = useNavigate();
 
-  // Handler to update form data
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (validate(formData)) {
       try {
-        // Make the axios request after validation passes
         const response = await axios.post('http://localhost:3001/signup', {
           name: formData.name,
           email: formData.email,
           password: formData.password,
         });
 
-        // Check for success response
         if (response.status === 201) {
           setSuccessMessage('Registration successful!');
-          setErrorMessage(''); // Clear any previous error messages
+          setErrorMessage(''); 
           setFormData({
             name: '',
             email: '',
             password: '',
             confirmPassword: '',
           });
-          // Optionally, navigate to another route (like login page)
           navigate('/');
         }
       } catch (error) {
-        // Handle the error based on the error response from the server
         if (error.response && error.response.status === 400) {
           setErrorMessage('Email already exists. Please use a different email.');
         } else {
           setErrorMessage('An unexpected error occurred. Please try again later.');
         }
-        setSuccessMessage(''); // Clear any success messages
+        setSuccessMessage('');
       }
     } else {
       setSuccessMessage('');
@@ -101,14 +94,12 @@ function RegistrationForm() {
           Register
         </Typography>
 
-        {/* Show error message if any */}
         {errorMessage && (
           <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
             {errorMessage}
           </Alert>
         )}
 
-        {/* Show success message if any */}
         {successMessage && (
           <Alert severity="success" sx={{ width: '100%', mb: 2 }}>
             {successMessage}

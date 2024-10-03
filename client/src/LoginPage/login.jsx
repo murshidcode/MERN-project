@@ -16,13 +16,12 @@ function LogIn() {
 
     axios.defaults.withCredentials = true;
 
-    // Check if user is already logged in
     useEffect(() => {
         const checkAuth = async () => {
             try {
                 const response = await axios.get("http://localhost:3001/table");
                 if (response.data.valid) {
-                    navigate("/table");  // If valid session, redirect to table
+                    navigate("/table");  
                 }
             } catch (error) {
                 console.log("User not authenticated:", error);
@@ -56,7 +55,7 @@ function LogIn() {
             }
         }
 
-        // Reset form fields after submission
+        
         setFormData({
             email: '',
             password: '',

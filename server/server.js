@@ -7,6 +7,8 @@ const jwt = require("jsonwebtoken")
 const cookieParser = require("cookie-parser")
 const session = require("express-session")
 const UserModel = require("./model/User");
+const EmployeeModel = require("./model/Employee")
+
 
 dotenv.config();
 const app = express();
@@ -51,7 +53,7 @@ app.post("/signup", async (req, res) => {
 app.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body;
-        const user = await UserModel.findOne({ email }); // Use findOne
+        const user = await UserModel.findOne({ email }); 
         if (user) {
             const passwordMatch = await bcrypt.compare(password, user.password);
             if (passwordMatch) {
@@ -72,7 +74,7 @@ app.post("/login", async (req, res) => {
             res.status(401).json("No records found");
         }
     } catch (error) {
-        res.status(500).json({ error: error.message }); // Fixed spelling
+        res.status(500).json({ error: error.message }); 
     }
 });
  
@@ -121,6 +123,72 @@ app.get('/table',varifyUser,(req, res) => {
     return res.json({valid: true, message: "authorized"})
 })
 
+
+
+
+app.post('/employee', varifyUser, async (req, res) => {
+    try {
+        const { name, position, contact } = req.body; 
+        const newEmployee = new EmployeeModel({
+            name,
+            position,
+            contact,
+            email: req.email 
+        });
+        const savedEmployee = await newEmployee.save(); 
+        res.status(201).json(savedEmployee); 
+    } catch (error) {
+        res.status(500).json({ error: error.message }); 
+    }
+});
+
+
+app.get('/employee', varifyUser, async (req, res) => {
+    try {
+        const employees = await EmployeeModel.find({ email: req.email }); 
+        res.status(200).json(employees); 
+    } catch (error) {
+        res.status(500).json({ error: error.message }); 
+    }
+});
+
+
+
+
+app.put('/employee/:id', varifyUser, async (req, res) => {
+    const { id } = req.params; 
+    const { name, position, contact } = req.body; 
+    try {
+        const updatedEmployee = await EmployeeModel.findByIdAndUpdate(
+            id,
+            { name, position, contact },
+            { new: true } 
+        );
+
+        if (!updatedEmployee) {
+            return res.status(404).json({ error: "Employee not found" });
+        }
+
+        res.status(200).json(updatedEmployee); 
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+
+
+
+app.delete('/employee/:id', varifyUser, async (req, res)=> {
+    const { id } = req.params;
+
+    try {
+        await EmployeeModel.findByIdAndDelete(id);
+        res.status(200).json({ message: 'Employee daleted' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+})
 
 
 
